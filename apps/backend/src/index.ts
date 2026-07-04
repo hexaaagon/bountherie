@@ -1,9 +1,10 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
+import { type RouterRoutes, router } from './routes';
 
-const app = new Hono()
+export type AppType = RouterRoutes;
+const app = new Hono();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+app.route('/', router);
 
-export default app
+export { router };
+export default app;

@@ -19,10 +19,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "biome": "biome",
     "format": "biome check --write .",
-    "lint:fix": "biome check --write .",
-    "lint:check": "biome check .",
     "check-types": "turbo run check-types"
   },
   "workspaces": [

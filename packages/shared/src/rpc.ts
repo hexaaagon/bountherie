@@ -1,8 +1,8 @@
-import { hc } from 'hono/client';
-import type { router as backendRouter } from '../../../apps/backend/src/index';
+import { hc } from "hono/client";
+import type { router as backendRouter } from "../../../apps/backend/src/index";
 
 const baseUrl =
-  process.env.DASHBOARD_BACKEND_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api` || '/api';
+  process.env.DASHBOARD_BACKEND_URL || `${process.env.NEXT_PUBLIC_APP_URL}/api` || "/api";
 
 export type { backendRouter };
 

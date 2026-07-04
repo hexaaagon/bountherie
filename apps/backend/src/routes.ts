@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono } from "hono";
 
 export const router = new Hono();
 // .route("/something", somethingRouter)

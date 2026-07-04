@@ -4,7 +4,7 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/dm-sans";
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --font-heading: var(--font-sans);

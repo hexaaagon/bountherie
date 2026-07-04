@@ -52,6 +52,15 @@
           "correctness": {
             "noUnusedVariables": "off",
             "noUnusedImports": "off"
+          },
+          "nursery": {
+            "useSortedClasses": {
+              "level": "error",
+              "options": {
+                "attributes": ["class"],
+                "functions": ["cn"]
+              }
+            }
           }
         }
       }

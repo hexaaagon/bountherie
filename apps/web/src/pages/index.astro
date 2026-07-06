@@ -1,8 +1,43 @@
 ---
+import About from "@/components/About.astro";
 import Hero from "@/components/Hero.astro";
+import Options from "@/components/Options";
+import { PlusSeparator } from "@/components/ui/plus-separator";
 import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout>
-  <Hero />
+  <div class="border-foreground/10 border-b px-8">
+    <div class="mx-auto max-w-4xl border-foreground/10 border-x p-4"></div>
+  </div>
+  <div class="border-foreground/10 border-b px-8">
+    <div
+      class="-z-50 absolute top-0 right-0 left-0 mx-auto"
+      style={{ filter: "blur(clamp(200px, 10vw, 250px))" }}
+    >
+      <span
+        class="absolute top-0 right-0 left-0 m-0 mx-auto h-[25vh] bg-gradient-to-r w-[90vw] from-[#0019F5]/50 to-[#828AD1]/50 p-0 sm:h-[15vh] md:h-[10vh] dark:bg-[#091588]/80 md:w-[80vw]"
+        style={{
+          clipPath: "polygon(0% 51%, 50% 0%, 100% 51%, 100% 100%, 0% 100%)",
+        }}
+      />
+    </div>
+    <Hero />
+  </div>
+  <div class="border-foreground/10 border-b px-8">
+    <About />
+  </div>
+  <!--
+  <div class="border-foreground/10 border-b px-8">
+    <Options client:load />
+  </div>
+  -->
+  <div class="grow px-8">
+    <div class="mx-auto h-full max-w-4xl border-foreground/10 border-x"></div>
+  </div>
+  <div class="border-foreground/10 border-t px-8">
+    <div class="mx-auto max-w-4xl border-foreground/10 border-x h-12 relative">
+      <PlusSeparator position={['top-left', 'top-right']} />
+    </div>
+  </div>
 </Layout>

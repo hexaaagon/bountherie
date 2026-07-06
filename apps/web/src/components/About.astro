@@ -1,0 +1,16 @@
+---
+import { Image } from "astro:assets";
+import Logo from "@/assets/logo.png";
+import HeroShaders from "./ui/hero-shaders.astro";
+import { PlusSeparator } from "./ui/plus-separator";
+---
+
+<main class="flex flex-col p-12 mx-auto max-w-4xl border-foreground/10 border-x items-start gap-3 relative">
+  <PlusSeparator position={['bottom-left', 'bottom-right']} />
+  <h2 class="font-medium text-3xl underline">What is this tool?</h2>
+  <span class="flex flex-col gap-5">
+    <p class="text-xl text-justify">Discord released a new feature called <a href="https://support.discord.com/hc/en-us/articles/35344672307607-Profile-Widgets-FAQ" target="_blank">Profile Widget</a>, and it's been great over the past few months. Recently, however, Discord added an experiment that allows individual users to create their own custom widgets.</p>
+    <p class="text-xl text-justify">One issue is that the image overflows the container. This means that when a user uploads a full image with background, it looks misaligned and unpolished. It is intended for a transparent background image, so the overflow is expected.</p>
+    <p class="text-xl text-justify">Here comes Bountherie! It's a tool that allows you to create custom image widgets transparently, so it looks prettier.</p>
+  </span>
+</main>

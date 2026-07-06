@@ -1,0 +1,41 @@
+<div class="absolute inset-0 h-full w-full z-[-1] animate-in duration-300" id="hero-shader"></div>
+
+<script>
+import {
+  ShaderMount,
+  getShaderColorFromString,
+  getShaderNoiseTexture,
+  grainGradientFragmentShader,
+  GrainGradientShapes,
+  ShaderFitOptions,
+} from "@paper-design/shaders";
+
+const container = document.getElementById("hero-shader");
+if (container) {
+  new ShaderMount(
+    container,
+    grainGradientFragmentShader,
+    {
+      u_colorBack: getShaderColorFromString("#00000000"),
+      u_colors: ["#0066ff", "#260882"].map(getShaderColorFromString),
+      u_colorsCount: 2,
+      u_softness: 0.5,
+      u_intensity: 0.5,
+      u_noise: 0.25,
+      u_shape: GrainGradientShapes.corners,
+      u_noiseTexture: getShaderNoiseTexture(),
+      u_fit: ShaderFitOptions.contain,
+      u_scale: 3,
+      u_rotation: 0,
+      u_offsetX: 0,
+      u_offsetY: 0,
+      u_originX: 0.5,
+      u_originY: 0.5,
+      u_worldWidth: 0,
+      u_worldHeight: 0,
+    },
+    undefined,
+    0.5,
+  );
+}
+</script>

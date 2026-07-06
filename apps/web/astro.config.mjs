@@ -10,4 +10,5 @@ export default defineConfig({
   },
 
   integrations: [react()],
+  compressHTML: true,
 });

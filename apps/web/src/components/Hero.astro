@@ -1,13 +1,16 @@
 ---
 import { Image } from "astro:assets";
 import Logo from "@/assets/logo.png";
+import HeroShaders from "./ui/hero-shaders.astro";
+import { PlusSeparator } from "./ui/plus-separator";
 ---
-<main>
-  <div class="flex flex-col pt-4 w-full items-center gap-3">
-    <h1 class="text-4xl font-semibold tracking-tighter font-dm-sans flex gap-4 items-center">
-      <Image src={Logo} alt="Bountherie logo" class="size-12 invert dark:invert-0" />
-      Bountherie
-    </h1>
-    <p class="text-center text-xl">a simple image boundaries fix for discord widget</p>
-  </div>
+
+<main class="flex flex-col py-12 mx-auto max-w-4xl border-foreground/10 border-x items-center gap-2 relative bg-accent/20">
+  <PlusSeparator position={['top-left', 'top-right', 'bottom-left', 'bottom-right']} />
+  <HeroShaders />
+  <h1 class="text-4xl font-semibold tracking-tighter flex gap-4 items-center">
+    <Image src={Logo} alt="Bountherie logo" class="size-12 invert dark:invert-0" />
+    Bountherie
+  </h1>
+  <p class="text-center text-xl">an over-engineered media boundaries fix for discord widget</p>
 </main>

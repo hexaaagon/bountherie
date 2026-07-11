@@ -1,16 +1,27 @@
 ---
+import { getImage } from "astro:assets";
 import About from "@/components/About.astro";
 import Hero from "@/components/Hero.astro";
 import Options from "@/components/Options";
 import { PlusSeparator } from "@/components/ui/plus-separator";
 import Layout from "@/layouts/Layout.astro";
+
+import CutFrame from "@/assets/cut-frame.png";
+import CleanFrame from "@/assets/clean-frame.png";
+import ClearFrame from "@/assets/clear-frame.png";
+
+const optimizedFrames = [
+  await getImage({ src: CutFrame, format: 'webp', width: 800 }),
+  await getImage({ src: CleanFrame, format: 'webp', width: 800 }),
+  await getImage({ src: ClearFrame, format: 'webp', width: 800 }),
+]
 ---
 
 <Layout>
   <div class="border-foreground/10 border-b px-8">
     <div class="mx-auto max-w-4xl border-foreground/10 border-x p-4"></div>
   </div>
-  <div class="border-foreground/10 border-b px-8">
+  <section class="border-foreground/10 border-b px-8">
     <div
       class="-z-50 absolute top-0 right-0 left-0 mx-auto"
       style={{ filter: "blur(clamp(200px, 10vw, 250px))" }}
@@ -23,15 +34,17 @@ import Layout from "@/layouts/Layout.astro";
       />
     </div>
     <Hero />
-  </div>
-  <div class="border-foreground/10 border-b px-8">
+  </section>
+  <section class="border-foreground/10 border-b px-8">
     <About />
-  </div>
-  <!--
-  <div class="border-foreground/10 border-b px-8">
-    <Options client:load />
-  </div>
-  -->
+  </section>
+  <section class="border-foreground/10 border-b px-8">
+    <Options client:load options={[
+      { name: "cut", id: "cut", image: optimizedFrames[0] },
+      { name: "clean", id: "clean", image: optimizedFrames[1] },
+      { name: "clear", id: "clear", image: optimizedFrames[2] },
+    ]} />
+  </section>
   <div class="grow px-8">
     <div class="mx-auto h-full max-w-4xl border-foreground/10 border-x"></div>
   </div>

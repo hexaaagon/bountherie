@@ -1,0 +1,38 @@
+{
+  "name": "@bountherie/engine",
+  "version": "0.1.0",
+  "description": "Client-side image processing engine for boundary operations",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./load": "./src/load.ts",
+    "./process": "./src/process.ts",
+    "./export": "./src/export.ts",
+    "./widget": "./src/widget.ts",
+    "./types": "./src/types.ts",
+    "./resize": "./src/resize.ts",
+    "./gif": "./src/gif.ts"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check-types": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/omggif": "^1.0.5",
+    "tsup": "^8.5.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "gifenc": "^1.0.3",
+    "gifsicle-wasm-browser": "^1.5.19",
+    "omggif": "^1.0.10"
+  }
+}

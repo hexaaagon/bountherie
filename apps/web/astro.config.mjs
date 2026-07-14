@@ -7,6 +7,9 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ["@phosphor-icons/react"],
+    },
   },
 
   integrations: [react()],

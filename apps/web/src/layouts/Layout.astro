@@ -1,7 +1,5 @@
 ---
 import "@/styles/global.css";
-import ThemeManager from "@/components/ThemeManager.astro";
-import ThemeSelect from "@/components/ThemeSelect.astro";
 import { PlusSeparator } from "@/components/ui/plus-separator";
 ---
 <!doctype html>
@@ -13,19 +11,8 @@ import { PlusSeparator } from "@/components/ui/plus-separator";
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Bountherie</title>
-		<ThemeManager />
 	</head>
-	<body class="flex flex-col">
-	  <ThemeSelect />
+	<body class="flex flex-col dark">
 		<slot />
   </body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

@@ -40,6 +40,11 @@ const SHARP_STILL_SOURCE_OPTIONS = {
   limitInputPixels: false
 };
 
+const DEBUG = process.env.DWIF_DEBUG === "1" || process.env.DWIF_DEBUG === "true";
+function debug(...args) {
+  if (DEBUG) console.error("[dwif]", ...args);
+}
+
 const DEFAULT_GIFSKI_QUALITY = 100;
 const GIFSKI_WINDOWS_CANDIDATES = [
   path.join(RUNTIME_ROOT, "vendor", "gifski-cli", "bin", "gifski.exe"),
@@ -146,6 +151,7 @@ function buildCornerCutout(radius) {
     .toBuffer();
 
   cornerCutoutCache.set(radius, cutoutPromise);
+  debug("buildCornerCutout: radius=%d", radius);
   return cutoutPromise;
 }
 
@@ -169,6 +175,17 @@ function buildCornerClearStarts(radius) {
     clearStarts[localY] = clearStart;
   }
 
+  if (DEBUG) {
+    const table = Array.from({ length: radius }, (_, i) => ({
+      localY: i,
+      globalY: `topStrip+${i}`,
+      kept: clearStarts[i],
+      cleared: radius - clearStarts[i]
+    }));
+    debug("buildCornerClearStarts: radius=%d", radius);
+    console.table(table);
+  }
+
   return clearStarts;
 }
 
@@ -177,6 +194,8 @@ function applyWidgetFixToRawFrames(inputData, width, frameHeight, frameCount, to
   const frameStride = width * frameHeight * 4;
   const rowStride = width * 4;
   const clearStarts = radius > 0 ? buildCornerClearStarts(radius) : null;
+
+  debug("applyWidgetFixToRawFrames: %dx%d, frames=%d, topStrip=%d, radius=%d", width, frameHeight, frameCount, topStrip, radius);
 
   for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
     const frameOffset = frameIndex * frameStride;
@@ -225,6 +244,7 @@ function applyWidgetFixToRawFrames(inputData, width, frameHeight, frameCount, to
     }
   }
 
+  debug("applyWidgetFixToRawFrames: done, output=%d bytes", outputData.length);
   return outputData;
 }
 
@@ -676,7 +696,8 @@ async function writeAnimatedWebP(outputData, width, frameHeight, frameCount, out
 
     frames[frameIndex] = await WebPMux.Image.generateFrame({
       buffer: frameWebP,
-      delay: metadata.delay?.[frameIndex] ?? 100
+      delay: metadata.delay?.[frameIndex] ?? 100,
+      blend: false
     });
 
     encodedFrames += 1;
@@ -761,6 +782,11 @@ async function processImageCore({
 
   const imageHeight = Math.max(frameHeight - topStrip, 0);
   const clampedRadius = Math.min(radius, metadata.width, imageHeight);
+  debug("processImageCore: input=%s, output=%s", inputPath, outputPath);
+  debug("processImageCore: size=%dx%d, frames=%d, frameHeight=%d", metadata.width, metadata.height, frameCount, frameHeight);
+  debug("processImageCore: topStrip=%s (manual=%s), radius=%s (manual=%s)", topStrip, manualTopStrip, radius, manualRadius);
+  debug("processImageCore: imageHeight=%d, clampedRadius=%d", imageHeight, clampedRadius);
+  debug("processImageCore: path=%s", frameCount > 1 ? "animated" : "still");
   const reportProgress =
     typeof onProgress === "function"
       ? (current, total, stage) =>

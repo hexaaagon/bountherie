@@ -6,6 +6,7 @@ export {
   applyWidgetFix,
   calculateTopStrip,
   calculateRadius,
+  setDebug,
   REFERENCE_SIZE,
   AUTO_TOP_STRIP_BASE,
   AUTO_RADIUS_BASE,

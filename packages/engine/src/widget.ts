@@ -1,20 +1,32 @@
+let DEBUG =
+  typeof globalThis !== "undefined" && !!(globalThis as any).__DWIF_DEBUG__;
+
+export function setDebug(enabled: boolean) {
+  DEBUG = enabled;
+}
+function debug(...args: unknown[]) {
+  if (DEBUG) console.warn("[widget]", ...args);
+}
+
 export const REFERENCE_SIZE = 512;
 export const AUTO_TOP_STRIP_BASE = 17;
 export const AUTO_RADIUS_BASE = 36;
 
-const AUTO_TOP_STRIP_EXPONENT =
-  Math.log(54 / 17) / Math.log(Math.sqrt(1844 * 853) / REFERENCE_SIZE);
-const AUTO_RADIUS_EXPONENT =
-  Math.log(172 / 36) / Math.log(Math.sqrt(1844 * 853) / REFERENCE_SIZE);
+const AUTO_TOP_STRIP_EXPONENT = 1;
+const AUTO_RADIUS_EXPONENT = 1;
 
 export function calculateTopStrip(width: number, height: number): number {
   const sizeFactor = Math.sqrt(width * height) / REFERENCE_SIZE;
-  return Math.max(0, Math.round(AUTO_TOP_STRIP_BASE * sizeFactor ** AUTO_TOP_STRIP_EXPONENT));
+  const result = Math.max(0, Math.round(AUTO_TOP_STRIP_BASE * sizeFactor ** AUTO_TOP_STRIP_EXPONENT));
+  debug("calculateTopStrip(%d, %d) = %d (sizeFactor=%d)", width, height, result, sizeFactor);
+  return result;
 }
 
 export function calculateRadius(width: number, height: number): number {
   const sizeFactor = Math.sqrt(width * height) / REFERENCE_SIZE;
-  return Math.max(0, Math.round(AUTO_RADIUS_BASE * sizeFactor ** AUTO_RADIUS_EXPONENT));
+  const result = Math.max(0, Math.round(AUTO_RADIUS_BASE * sizeFactor ** AUTO_RADIUS_EXPONENT));
+  debug("calculateRadius(%d, %d) = %d (sizeFactor=%d)", width, height, result, sizeFactor);
+  return result;
 }
 
 export interface WidgetOptions {
@@ -42,6 +54,7 @@ function buildCornerClearStarts(radius: number): Int32Array {
     clearStarts[localY] = clearStart;
   }
 
+  debug("buildCornerClearStarts: radius=%d, starts=%o", radius, Array.from(clearStarts));
   return clearStarts;
 }
 
@@ -56,6 +69,8 @@ export function applyWidgetFix(
 
   const clampedRadius = Math.min(radius, width, height);
   const clampedTopStrip = Math.min(topStrip, height);
+
+  debug("applyWidgetFix: %dx%d, topStrip=%d (clamped=%d), radius=%d (clamped=%d)", width, height, topStrip, clampedTopStrip, radius, clampedRadius);
 
   for (let y = 0; y < height - clampedTopStrip; y++) {
     const srcOffset = y * rowStride;

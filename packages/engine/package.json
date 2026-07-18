@@ -22,6 +22,12 @@
     "check-types": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@bountherie/env": "*",
+    "gifenc": "^1.0.3",
+    "gifsicle-wasm-browser": "^1.5.19",
+    "omggif": "^1.0.10"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/omggif": "^1.0.5",
@@ -29,10 +35,5 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "gifenc": "^1.0.3",
-    "gifsicle-wasm-browser": "^1.5.19",
-    "omggif": "^1.0.10"
   }
 }

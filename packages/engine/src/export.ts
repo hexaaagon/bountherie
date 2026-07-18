@@ -2,11 +2,18 @@ export async function imageDataToBlob(
   imageData: ImageData,
   type: string = "image/png",
   quality?: number,
+  backgroundColor?: [number, number, number],
 ): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = imageData.width;
   canvas.height = imageData.height;
   const ctx = canvas.getContext("2d")!;
+
+  if (backgroundColor) {
+    ctx.fillStyle = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
   ctx.putImageData(imageData, 0, 0);
 
   return new Promise<Blob>((resolve, reject) => {
@@ -33,7 +40,8 @@ export async function imageDataToObjectURL(
   imageData: ImageData,
   type?: string,
   quality?: number,
+  backgroundColor?: [number, number, number],
 ): Promise<string> {
-  const blob = await imageDataToBlob(imageData, type, quality);
+  const blob = await imageDataToBlob(imageData, type, quality, backgroundColor);
   return createObjectURL(blob);
 }

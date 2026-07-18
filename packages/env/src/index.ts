@@ -3,12 +3,12 @@ import * as z from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.url(),
+  //  DATABASE_URL: z.url(),
   },
 
   clientPrefix: "PUBLIC_",
   client: {
-    // PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+    PUBLIC_DWIF_DEBUG: z.string().optional(),
   },
 
   /**

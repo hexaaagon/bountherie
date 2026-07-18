@@ -28,7 +28,7 @@ export function PlusSeparator({
         <Plus
           size={tlSize || size || 12}
           className={cn(
-            "-top-[6.4px] -left-[6.4px] absolute text-separator",
+            "absolute -top-[6.4px] -left-[6.4px] text-separator",
             className,
             tlClassName,
           )}
@@ -40,7 +40,7 @@ export function PlusSeparator({
         <Plus
           size={trSize || size || 12}
           className={cn(
-            "-top-[6.4px] -right-[6.4px] absolute text-separator",
+            "absolute -top-[6.4px] -right-[6.4px] text-separator",
             className,
             trClassName,
           )}
@@ -52,7 +52,7 @@ export function PlusSeparator({
         <Plus
           size={blSize || size || 12}
           className={cn(
-            "-bottom-[6.4px] -left-[6.4px] absolute text-separator",
+            "absolute -bottom-[6.4px] -left-[6.4px] text-separator",
             className,
             blClassName,
           )}
@@ -64,7 +64,7 @@ export function PlusSeparator({
         <Plus
           size={brSize || size || 12}
           className={cn(
-            "-bottom-[6.4px] -right-[6.4px] absolute text-separator",
+            "absolute -right-[6.4px] -bottom-[6.4px] text-separator",
             className,
             brClassName,
           )}

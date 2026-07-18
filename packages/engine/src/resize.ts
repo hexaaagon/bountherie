@@ -3,10 +3,7 @@ export interface ResizeOptions {
   maxHeight?: number;
 }
 
-export function resizeImage(
-  data: ImageData,
-  options?: ResizeOptions,
-): ImageData {
+export function resizeImage(data: ImageData, options?: ResizeOptions): ImageData {
   const maxWidth = options?.maxWidth ?? 1024;
   const maxHeight = options?.maxHeight;
   const { width, height } = data;
@@ -31,12 +28,13 @@ export function resizeImage(
   const canvas = document.createElement("canvas");
   canvas.width = newWidth;
   canvas.height = newHeight;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get 2D context");
 
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = width;
   tempCanvas.height = height;
-  tempCanvas.getContext("2d")!.putImageData(data, 0, 0);
+  tempCanvas.getContext("2d")?.putImageData(data, 0, 0);
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";

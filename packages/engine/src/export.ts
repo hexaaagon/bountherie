@@ -7,7 +7,8 @@ export async function imageDataToBlob(
   const canvas = document.createElement("canvas");
   canvas.width = imageData.width;
   canvas.height = imageData.height;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get 2D context");
 
   if (backgroundColor) {
     ctx.fillStyle = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;

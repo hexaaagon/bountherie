@@ -20,19 +20,14 @@ declare module "gifenc" {
   };
 
   type Encoder = {
-    writeFrame: (
-      index: Uint8Array,
-      width: number,
-      height: number,
-      ops?: WriteFrameOpts,
-    ) => void;
+    writeFrame: (index: Uint8Array, width: number, height: number, ops?: WriteFrameOpts) => void;
     finish: () => void;
     bytes: () => Uint8Array;
     bytesView: () => Uint8Array;
     writeHeader: () => void;
     reset: () => void;
     buffer: ArrayBuffer;
-    stream: any;
+    stream: unknown;
   };
 
   export function quantize(

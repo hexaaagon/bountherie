@@ -1,20 +1,19 @@
 ---
 import { getImage } from "astro:assets";
+import CleanFrame from "@/assets/clean-frame.png";
+import ClearFrame from "@/assets/clear-frame.png";
+import CutFrame from "@/assets/cut-frame.png";
 import About from "@/components/About.astro";
 import Hero from "@/components/Hero.astro";
 import Options from "@/components/Options";
 import { PlusSeparator } from "@/components/ui/plus-separator";
 import Layout from "@/layouts/Layout.astro";
 
-import CutFrame from "@/assets/cut-frame.png";
-import CleanFrame from "@/assets/clean-frame.png";
-import ClearFrame from "@/assets/clear-frame.png";
-
 const optimizedFrames = [
-  await getImage({ src: CutFrame, format: 'webp', width: 500 }),
-  await getImage({ src: CleanFrame, format: 'webp', width: 500 }),
-  await getImage({ src: ClearFrame, format: 'webp', width: 500 }),
-]
+  await getImage({ src: CutFrame, format: "webp", width: 500 }),
+  await getImage({ src: CleanFrame, format: "webp", width: 500 }),
+  await getImage({ src: ClearFrame, format: "webp", width: 500 }),
+];
 ---
 
 <Layout>

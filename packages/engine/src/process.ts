@@ -1,25 +1,20 @@
 export type { ProcessOptions } from "./types.ts";
+
 import type { ProcessOptions } from "./types.ts";
-import { applyWidgetFix, calculateTopStrip, calculateRadius } from "./widget.ts";
 import type { WidgetOptions } from "./widget.ts";
+import { applyWidgetFix, calculateRadius, calculateTopStrip } from "./widget.ts";
 
 function p(data: Uint8ClampedArray, i: number): number {
-  return data[i]!;
+  return data[i] ?? 0;
 }
 
-export function cutImage(
-  data: ImageData,
-  options?: ProcessOptions & WidgetOptions,
-): ImageData {
+export function cutImage(data: ImageData, options?: ProcessOptions & WidgetOptions): ImageData {
   const topStrip = options?.topStrip ?? calculateTopStrip(data.width, data.height);
   const radius = options?.radius ?? calculateRadius(data.width, data.height);
   return applyWidgetFix(data, topStrip, radius);
 }
 
-export function cleanImage(
-  data: ImageData,
-  options?: ProcessOptions,
-): ImageData {
+export function cleanImage(data: ImageData, options?: ProcessOptions): ImageData {
   const smoothness = options?.smoothness ?? 1;
   const { width, height } = data;
   const output = new Uint8ClampedArray(data.data);
@@ -32,7 +27,10 @@ export function cleanImage(
 
   for (let y = half; y < height - half; y++) {
     for (let x = half; x < width - half; x++) {
-      let rr = 0, gg = 0, bb = 0, aa = 0;
+      let rr = 0,
+        gg = 0,
+        bb = 0,
+        aa = 0;
 
       for (let ky = -half; ky <= half; ky++) {
         for (let kx = -half; kx <= half; kx++) {
@@ -55,10 +53,7 @@ export function cleanImage(
   return new ImageData(output, width, height);
 }
 
-export function clearImage(
-  data: ImageData,
-  options?: ProcessOptions,
-): ImageData {
+export function clearImage(data: ImageData, options?: ProcessOptions): ImageData {
   const tolerance = options?.tolerance ?? 60;
   const threshold = options?.threshold ?? 240;
   const output = new Uint8ClampedArray(data.data);
@@ -76,7 +71,10 @@ export function clearImage(
 
       if (
         a >= 30 &&
-        (x === 0 || y === 0 || x === width - 1 || y === height - 1 ||
+        (x === 0 ||
+          y === 0 ||
+          x === width - 1 ||
+          y === height - 1 ||
           (r > threshold && g > threshold && b > threshold))
       ) {
         edgePixels.push([r, g, b, a]);

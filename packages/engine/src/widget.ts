@@ -1,5 +1,6 @@
 let DEBUG =
-  typeof globalThis !== "undefined" && !!(globalThis as any).__DWIF_DEBUG__;
+  typeof globalThis !== "undefined" &&
+  !!(globalThis as unknown as Record<string, unknown>).__DWIF_DEBUG__;
 
 export function setDebug(enabled: boolean) {
   DEBUG = enabled;
@@ -17,7 +18,10 @@ const AUTO_RADIUS_EXPONENT = 1;
 
 export function calculateTopStrip(width: number, height: number): number {
   const sizeFactor = Math.sqrt(width * height) / REFERENCE_SIZE;
-  const result = Math.max(0, Math.round(AUTO_TOP_STRIP_BASE * sizeFactor ** AUTO_TOP_STRIP_EXPONENT));
+  const result = Math.max(
+    0,
+    Math.round(AUTO_TOP_STRIP_BASE * sizeFactor ** AUTO_TOP_STRIP_EXPONENT),
+  );
   debug("calculateTopStrip(%d, %d) = %d (sizeFactor=%d)", width, height, result, sizeFactor);
   return result;
 }
@@ -58,11 +62,7 @@ function buildCornerClearStarts(radius: number): Int32Array {
   return clearStarts;
 }
 
-export function applyWidgetFix(
-  data: ImageData,
-  topStrip: number,
-  radius: number,
-): ImageData {
+export function applyWidgetFix(data: ImageData, topStrip: number, radius: number): ImageData {
   const { width, height } = data;
   const rowStride = width * 4;
   const output = new Uint8ClampedArray(width * height * 4);
@@ -70,7 +70,15 @@ export function applyWidgetFix(
   const clampedRadius = Math.min(radius, width, height);
   const clampedTopStrip = Math.min(topStrip, height);
 
-  debug("applyWidgetFix: %dx%d, topStrip=%d (clamped=%d), radius=%d (clamped=%d)", width, height, topStrip, clampedTopStrip, radius, clampedRadius);
+  debug(
+    "applyWidgetFix: %dx%d, topStrip=%d (clamped=%d), radius=%d (clamped=%d)",
+    width,
+    height,
+    topStrip,
+    clampedTopStrip,
+    radius,
+    clampedRadius,
+  );
 
   for (let y = 0; y < height - clampedTopStrip; y++) {
     const srcOffset = y * rowStride;
@@ -86,7 +94,7 @@ export function applyWidgetFix(
       const y = clampedTopStrip + localY;
       if (y >= height) break;
 
-      const clearStart = clearStarts[localY]!;
+      const clearStart = clearStarts[localY] ?? clampedRadius;
       if (clearStart >= clampedRadius) continue;
 
       for (let localX = clearStart; localX < clampedRadius; localX++) {

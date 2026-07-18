@@ -1,17 +1,27 @@
-export { fileToImageBitmap, imageBitmapToImageData, fileToImageData, imageDataToCanvas } from "./load.ts";
-export { cutImage, cleanImage, clearImage } from "./process.ts";
-export type { ProcessOptions } from "./types.ts";
-export { imageDataToBlob, createObjectURL, revokeObjectURL, imageDataToObjectURL } from "./export.ts";
 export {
-  applyWidgetFix,
-  calculateTopStrip,
-  calculateRadius,
-  setDebug,
-  REFERENCE_SIZE,
-  AUTO_TOP_STRIP_BASE,
-  AUTO_RADIUS_BASE,
-} from "./widget.ts";
-export type { WidgetOptions } from "./widget.ts";
-export { resizeImage } from "./resize.ts";
+  createObjectURL,
+  imageDataToBlob,
+  imageDataToObjectURL,
+  revokeObjectURL,
+} from "./export.ts";
+export { GifProcessor, GifProgressEvent, imageDataToGifBlob, processAnimatedGif } from "./gif.ts";
+export {
+  fileToImageBitmap,
+  fileToImageData,
+  imageBitmapToImageData,
+  imageDataToCanvas,
+} from "./load.ts";
+export { cleanImage, clearImage, cutImage } from "./process.ts";
 export type { ResizeOptions } from "./resize.ts";
-export { imageDataToGifBlob, processAnimatedGif, GifProcessor, GifProgressEvent } from "./gif.ts";
+export { resizeImage } from "./resize.ts";
+export type { ProcessOptions } from "./types.ts";
+export type { WidgetOptions } from "./widget.ts";
+export {
+  AUTO_RADIUS_BASE,
+  AUTO_TOP_STRIP_BASE,
+  applyWidgetFix,
+  calculateRadius,
+  calculateTopStrip,
+  REFERENCE_SIZE,
+  setDebug,
+} from "./widget.ts";

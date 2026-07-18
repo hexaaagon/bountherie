@@ -1,8 +1,10 @@
 import gifenc from "gifenc";
+
 const { GIFEncoder, quantize, applyPalette } = gifenc;
+
+import gifsicle from "gifsicle-wasm-browser";
 import { GifReader } from "omggif";
 import { resizeImage } from "./resize.ts";
-import gifsicle from "gifsicle-wasm-browser";
 
 function tick() {
   return new Promise<void>((r) => setTimeout(r, 0));
@@ -10,19 +12,16 @@ function tick() {
 
 function hasAlpha(data: Uint8ClampedArray, threshold = 127): boolean {
   for (let i = 3; i < data.length; i += 4) {
-    if (data[i]! <= threshold) return true;
+    if ((data[i] ?? 255) <= threshold) return true;
   }
   return false;
 }
 
-function collectOpaquePixels(
-  data: Uint8ClampedArray,
-  alphaThreshold = 127,
-): Uint8Array {
+function collectOpaquePixels(data: Uint8ClampedArray, alphaThreshold = 127): Uint8Array {
   const pixelCount = Math.floor(data.length / 4);
   let kept = 0;
   for (let i = 0; i < pixelCount; i++) {
-    if (data[i * 4 + 3]! > alphaThreshold) kept++;
+    if ((data[i * 4 + 3] ?? 0) > alphaThreshold) kept++;
   }
 
   if (kept === pixelCount) {
@@ -33,10 +32,10 @@ function collectOpaquePixels(
   let offset = 0;
   for (let i = 0; i < pixelCount; i++) {
     const si = i * 4;
-    if (data[si + 3]! <= alphaThreshold) continue;
-    out[offset] = data[si]!;
-    out[offset + 1] = data[si + 1]!;
-    out[offset + 2] = data[si + 2]!;
+    if ((data[si + 3] ?? 0) <= alphaThreshold) continue;
+    out[offset] = data[si] ?? 0;
+    out[offset + 1] = data[si + 1] ?? 0;
+    out[offset + 2] = data[si + 2] ?? 0;
     out[offset + 3] = 255;
     offset += 4;
   }
@@ -124,9 +123,10 @@ function restoreRegion(
   }
 }
 
-function analyzeTransparency(
-  data: Uint8ClampedArray,
-): { usesTransparency: boolean; transparentIndex: number } {
+function analyzeTransparency(data: Uint8ClampedArray): {
+  usesTransparency: boolean;
+  transparentIndex: number;
+} {
   const usesTransparency = hasAlpha(data);
   return { usesTransparency, transparentIndex: usesTransparency ? 0 : -1 };
 }
@@ -157,7 +157,7 @@ function applyPaletteWithTransparency(
     const opaqueIndex = applyPalette(data, palette.slice(1), "rgb565");
     const index = new Uint8Array(opaqueIndex.length);
     for (let pi = 0; pi < opaqueIndex.length; pi++) {
-      index[pi] = data[pi * 4 + 3]! <= 127 ? transparentIndex : opaqueIndex[pi]! + 1;
+      index[pi] = (data[pi * 4 + 3] ?? 0) <= 127 ? transparentIndex : (opaqueIndex[pi] ?? 0) + 1;
     }
     return index;
   }
@@ -186,16 +186,14 @@ function encodeGifFrame(
   });
 }
 
-export async function imageDataToGifBlob(
-  imageData: ImageData,
-): Promise<Blob> {
+export async function imageDataToGifBlob(imageData: ImageData): Promise<Blob> {
   const { width, height, data } = imageData;
   const { usesTransparency, transparentIndex } = analyzeTransparency(data);
   const palette = buildPalette(data, usesTransparency);
   const gif = GIFEncoder();
   encodeGifFrame(gif, data, width, height, 100, true, palette, transparentIndex);
   gif.finish();
-  return new Blob([gif.bytes()], { type: "image/gif" });
+  return new Blob([gif.bytes() as Uint8Array<ArrayBuffer>], { type: "image/gif" });
 }
 
 export class GifProgressEvent extends Event {
@@ -245,8 +243,11 @@ export class GifProcessor extends EventTarget {
         const prev = reader.frameInfo(i - 1);
         if (prev.disposal === 2) {
           fillRect(accumulator, width, height, prev.x, prev.y, prev.width, prev.height, bgColor);
-        } else if (prev.disposal === 3 && savedRegions[i - 1]) {
-          restoreRegion(accumulator, width, prev.x, prev.y, savedRegions[i - 1]!, prev.width, prev.height);
+        } else if (prev.disposal === 3) {
+          const saved = savedRegions[i - 1];
+          if (saved) {
+            restoreRegion(accumulator, width, prev.x, prev.y, saved, prev.width, prev.height);
+          }
         }
       }
 
@@ -269,20 +270,31 @@ export class GifProcessor extends EventTarget {
 
     this._log(`All ${totalFrames} frames decoded, encoding...`);
 
-    const firstFrame = frames[0]!;
+    const firstFrame = frames[0];
+    if (!firstFrame) throw new Error("No frames decoded");
     const { usesTransparency, transparentIndex } = analyzeTransparency(firstFrame.data.data);
     const palette = buildPalette(firstFrame.data.data, usesTransparency);
 
     const gif = GIFEncoder();
 
     for (let i = 0; i < frames.length; i++) {
-      const frame = frames[i]!;
-      encodeGifFrame(gif, frame.data.data, frame.data.width, frame.data.height, frame.delay, i === 0, palette, transparentIndex);
+      const frame = frames[i];
+      if (!frame) continue;
+      encodeGifFrame(
+        gif,
+        frame.data.data,
+        frame.data.width,
+        frame.data.height,
+        frame.delay,
+        i === 0,
+        palette,
+        transparentIndex,
+      );
       this._emitProgress(totalFrames + i + 1, totalSteps, "Encoding GIF");
     }
 
     gif.finish();
-    let blob = new Blob([gif.bytes()], { type: "image/gif" });
+    let blob = new Blob([gif.bytes() as Uint8Array<ArrayBuffer>], { type: "image/gif" });
     this._log(`Encoded size: ${blob.size} bytes`);
 
     this._emitProgress(totalSteps, totalSteps, "Compressing GIF");
@@ -309,7 +321,9 @@ export class GifProcessor extends EventTarget {
           command: [cmd],
         });
         const candidate = result[0] as Blob;
-        this._log(`Compressed size: ${candidate.size} bytes (lossy=${cfg.lossy}, colors=${cfg.colors}${cfg.scale ? `, scale=${cfg.scale}` : ""})`);
+        this._log(
+          `Compressed size: ${candidate.size} bytes (lossy=${cfg.lossy}, colors=${cfg.colors}${cfg.scale ? `, scale=${cfg.scale}` : ""})`,
+        );
         if (candidate.size < bestSize) {
           bestSize = candidate.size;
           bestBlob = candidate;
@@ -364,8 +378,11 @@ export async function processAnimatedGif(
       const prev = reader.frameInfo(i - 1);
       if (prev.disposal === 2) {
         fillRect(accumulator, width, height, prev.x, prev.y, prev.width, prev.height, bgColor);
-      } else if (prev.disposal === 3 && savedRegions[i - 1]) {
-        restoreRegion(accumulator, width, prev.x, prev.y, savedRegions[i - 1]!, prev.width, prev.height);
+      } else if (prev.disposal === 3) {
+        const saved = savedRegions[i - 1];
+        if (saved) {
+          restoreRegion(accumulator, width, prev.x, prev.y, saved, prev.width, prev.height);
+        }
       }
     }
 
@@ -387,20 +404,31 @@ export async function processAnimatedGif(
 
   log(`All ${totalFrames} frames decoded, encoding...`);
 
-  const firstFrame = frames[0]!;
+  const firstFrame = frames[0];
+  if (!firstFrame) throw new Error("No frames decoded");
   const { usesTransparency, transparentIndex } = analyzeTransparency(firstFrame.data.data);
   const palette = buildPalette(firstFrame.data.data, usesTransparency);
 
   const gif = GIFEncoder();
 
   for (let i = 0; i < frames.length; i++) {
-    const frame = frames[i]!;
-    encodeGifFrame(gif, frame.data.data, frame.data.width, frame.data.height, frame.delay, i === 0, palette, transparentIndex);
+    const frame = frames[i];
+    if (!frame) continue;
+    encodeGifFrame(
+      gif,
+      frame.data.data,
+      frame.data.width,
+      frame.data.height,
+      frame.delay,
+      i === 0,
+      palette,
+      transparentIndex,
+    );
     onProgress?.(totalFrames + i + 1, totalSteps, "Encoding GIF");
   }
 
   gif.finish();
-  let blob = new Blob([gif.bytes()], { type: "image/gif" });
+  let blob = new Blob([gif.bytes() as Uint8Array<ArrayBuffer>], { type: "image/gif" });
   log(`Encoded size: ${blob.size} bytes`);
 
   onProgress?.(totalSteps, totalSteps, "Compressing GIF");
@@ -426,7 +454,9 @@ export async function processAnimatedGif(
         command: [cmd],
       });
       const candidate = result[0] as Blob;
-      log(`Compressed size: ${candidate.size} bytes (lossy=${cfg.lossy}, colors=${cfg.colors}${cfg.scale ? `, scale=${cfg.scale}` : ""})`);
+      log(
+        `Compressed size: ${candidate.size} bytes (lossy=${cfg.lossy}, colors=${cfg.colors}${cfg.scale ? `, scale=${cfg.scale}` : ""})`,
+      );
       if (candidate.size < bestSize) {
         bestSize = candidate.size;
         bestBlob = candidate;

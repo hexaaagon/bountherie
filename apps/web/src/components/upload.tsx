@@ -71,7 +71,7 @@ export default function FileUpload06() {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-y-6">
       <Card
-        className="group flex max-h-[200px] w-full flex-col items-center justify-center gap-4 py-8 border-dashed text-sm shadow-none cursor-pointer hover:bg-muted/50 transition-colors"
+        className="group flex max-h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-4 border-dashed py-8 text-sm shadow-none transition-colors hover:bg-muted/50"
         onDragOver={onDragOver}
         onDrop={onDropFiles}
         onClick={openFilePicker}
@@ -83,7 +83,7 @@ export default function FileUpload06() {
               Drop files here or{" "}
               <Button
                 variant="link"
-                className="text-primary p-0 h-auto font-normal"
+                className="h-auto p-0 font-normal text-primary"
                 onClick={openFilePicker}
               >
                 browse files
@@ -100,7 +100,7 @@ export default function FileUpload06() {
           multiple
           onChange={onFileInputChange}
         />
-        <span className="text-base/6 text-muted-foreground group-disabled:opacity-50 mt-2 block sm:text-xs">
+        <span className="mt-2 block text-base/6 text-muted-foreground group-disabled:opacity-50 sm:text-xs">
           Supported: JPG, PNG, GIF (max 10 MB)
         </span>
       </Card>
@@ -108,8 +108,8 @@ export default function FileUpload06() {
       <div className="flex flex-col gap-y-4">
         {activeUploads.length > 0 && (
           <div>
-            <h2 className="text-balance text-foreground text-lg flex items-center font-mono font-normal uppercase sm:text-xs mb-4">
-              <Loader2 className="size-4 mr-1 animate-spin" />
+            <h2 className="mb-4 flex items-center text-balance font-mono font-normal text-foreground text-lg uppercase sm:text-xs">
+              <Loader2 className="mr-1 size-4 animate-spin" />
               Uploading
             </h2>
             <div className="-mt-2 divide-y">
@@ -120,14 +120,14 @@ export default function FileUpload06() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="hidden size-4 group-hover:inline p-0 h-auto"
+                      className="hidden size-4 h-auto p-0 group-hover:inline"
                       onClick={() => removeUploadById(file.id)}
                       aria-label="Cancel"
                     >
                       <X className="size-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-col w-full mb-1">
+                  <div className="mb-1 flex w-full flex-col">
                     <div className="flex justify-between gap-2">
                       <span className="select-none text-base/6 text-foreground group-disabled:opacity-50 sm:text-sm/6">
                         {file.name}
@@ -148,7 +148,7 @@ export default function FileUpload06() {
 
         {completedUploads.length > 0 && (
           <div>
-            <h2 className="text-balance text-foreground text-lg flex items-center font-mono font-normal uppercase sm:text-xs mb-4">
+            <h2 className="mb-4 flex items-center text-balance font-mono font-normal text-foreground text-lg uppercase sm:text-xs">
               <CheckCircle className="mr-1 size-4" />
               Finished
             </h2>
@@ -160,14 +160,14 @@ export default function FileUpload06() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="hidden size-4 group-hover:inline p-0 h-auto"
+                      className="hidden size-4 h-auto p-0 group-hover:inline"
                       onClick={() => removeUploadById(file.id)}
                       aria-label="Remove"
                     >
                       <X className="size-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-col w-full mb-1">
+                  <div className="mb-1 flex w-full flex-col">
                     <div className="flex justify-between gap-2">
                       <span className="select-none text-base/6 text-foreground group-disabled:opacity-50 sm:text-sm/6">
                         {file.name}

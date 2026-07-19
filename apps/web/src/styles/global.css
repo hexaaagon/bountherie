@@ -86,16 +86,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground h-full w-full;
   }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
   html {
     @apply font-sans h-full w-full;
   }
+
   a {
     @apply underline underline-offset-2 decoration-dashed text-muted-foreground transition hover:text-white;
   }

@@ -11,7 +11,7 @@ import {
   imageDataToObjectURL,
   revokeObjectURL,
 } from "@bountherie/engine";
-import { ArrowClockwise, CaretDown, CloudArrowDown, Crop, Upload, X } from "@phosphor-icons/react";
+import { ArrowClockwise, CaretDown, CloudArrowDown, Crop, Moon, Sun, Upload, X } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Cropper from "react-easy-crop";
@@ -90,6 +90,7 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
     file: File;
   } | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [defaults, setDefaults] = useState({ topStrip: 17, radius: 36 });
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -105,9 +106,22 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
+  const [bgTheme, setBgTheme] = useState<"light" | "dark">("light");
   const filePickerRef = useRef<HTMLInputElement>(null);
   const cachedData = useRef<ImageData | null>(null);
   const gifProcessorRef = useRef<GifProcessor | null>(null);
+
+  useEffect(() => {
+    if (!file) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [file]);
 
   useEffect(() => {
     const processor = new GifProcessor();
@@ -254,6 +268,25 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
     setProcessing(false);
   };
 
+  const processFileRef = useRef(processFile);
+  useEffect(() => {
+    processFileRef.current = processFile;
+  }, [processFile]);
+
+  useEffect(() => {
+    if (!file || options.boundaries === "none") return;
+    if (!file.resultUrl) return; // Only auto-process on options change if already processed
+
+    const timeoutId = setTimeout(
+      () => {
+        processFileRef.current();
+      },
+      file.mime === "image/gif" ? 500 : 50,
+    );
+
+    return () => clearTimeout(timeoutId);
+  }, [options]);
+
   const downloadFile = () => {
     if (!file) return;
 
@@ -303,6 +336,13 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
     revokeObjectURL(file.previewUrl);
     if (file.resultUrl) revokeObjectURL(file.resultUrl);
     setFile((prev) => (prev ? { ...prev, previewUrl: croppedUrl, resultUrl: null } : prev));
+
+    if (!isInitialCrop) {
+      setTimeout(() => {
+        processFileRef.current();
+      }, 50);
+    }
+
     setIsInitialCrop(false);
     setCropDialogOpen(false);
   };
@@ -316,7 +356,6 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
 
   return (
     <main className="relative mx-auto flex max-w-4xl flex-col gap-8 border-foreground/10 border-x px-12 pt-8 pb-4">
-      <h2 className="absolute top-2 right-2 font-medium text-sm opacity-50">unfinished ui/ux</h2>
       <section className="flex w-full flex-col items-start gap-4 tracking-[-0.04em]">
         <h2 className="font-medium text-4xl underline">Boundaries</h2>
         <div className="grid grid-cols-3 gap-4">
@@ -343,46 +382,83 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
         </section>
       ) : options.boundaries === "cut" ? (
         <>
+          <input
+            ref={filePickerRef}
+            type="file"
+            className="hidden"
+            accept="image/png,image/jpeg,image/gif"
+            onChange={onFileInputChange}
+          />
           <section className="flex flex-col gap-4">
             {file ? (
               <div className="flex flex-col gap-4">
-                <div className="group relative">
-                  <div className="relative flex max-h-[500px] items-center justify-center overflow-hidden rounded-lg border bg-muted">
-                    <img
-                      src={src}
-                      alt={file.name}
-                      className="max-h-[500px] max-w-full object-contain"
-                    />
-                    {file.resultUrl && (
-                      <span className="absolute top-2 left-2 rounded bg-background/80 px-2 py-1 font-mono text-xs">
-                        processed
-                      </span>
-                    )}
-                  </div>
-                  <div className="absolute top-2 right-2 flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 rounded-full bg-background/80 hover:bg-background"
-                      onClick={() => {
-                        setIsInitialCrop(false);
-                        setCropDialogOpen(true);
+                {!file.resultUrl ? (
+                  <div
+                    className="group relative cursor-pointer overflow-hidden rounded-lg"
+                    onClick={openFilePicker}
+                    onDragOver={onDragOver}
+                    onDrop={onDropFiles}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBgTheme((prev) => (prev === "light" ? "dark" : "light"));
                       }}
-                      aria-label="Crop"
+                      className="absolute right-2 top-2 z-20 rounded-md bg-black/20 p-2 text-white transition-colors hover:bg-black/40"
                     >
-                      <Crop className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 rounded-full bg-background/80 hover:bg-background"
-                      onClick={removeFile}
-                      aria-label="Remove"
+                      {bgTheme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+                    </button>
+                    <div
+                      className="relative flex max-h-[500px] items-center justify-center"
+                      style={{
+                        backgroundImage: bgTheme === "light"
+                          ? `conic-gradient(#e5e7eb 25%, #f9fafb 25% 50%, #e5e7eb 50% 75%, #f9fafb 75%)`
+                          : `conic-gradient(#374151 25%, #1f2937 25% 50%, #374151 50% 75%, #1f2937 75%)`,
+                        backgroundSize: `16px 16px`,
+                      }}
                     >
-                      <X className="size-4" />
-                    </Button>
+                      <img
+                        src={src}
+                        alt={file.name}
+                        className="max-h-[500px] max-w-full object-contain"
+                      />
+                    </div>
+                    {/* Hover overlay acting as upload box */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Upload className="mb-2 size-8 text-white/80" />
+                      <span className="font-medium text-white">Click or drag to replace image</span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="relative overflow-hidden rounded-lg">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBgTheme((prev) => (prev === "light" ? "dark" : "light"));
+                      }}
+                      className="absolute right-2 top-2 z-20 rounded-md bg-black/20 p-2 text-white transition-colors hover:bg-black/40"
+                    >
+                      {bgTheme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+                    </button>
+                    <div
+                      className="relative flex max-h-[500px] items-center justify-center"
+                      style={{
+                        backgroundImage: bgTheme === "light"
+                          ? `conic-gradient(#e5e7eb 25%, #f9fafb 25% 50%, #e5e7eb 50% 75%, #f9fafb 75%)`
+                          : `conic-gradient(#374151 25%, #080b0f 25% 50%, #080b0f 50% 75%, #080b0f 75%)`,
+                        backgroundSize: `16px 16px`,
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt={file.name}
+                        className="max-h-[500px] max-w-full object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {processing && (
                   <div className="flex items-center gap-3">
@@ -399,14 +475,69 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  <Button onClick={processFile} disabled={processing} className="flex-1">
-                    {processing ? "Processing..." : file.resultUrl ? "Reprocess" : "Process"}
-                  </Button>
-                  <Button variant="outline" onClick={downloadFile} className="flex-1">
-                    <CloudArrowDown className="mr-1.5 size-4" />
-                    Download
-                  </Button>
+                <div className="flex flex-col gap-3">
+                  {!file.resultUrl ? (
+                    <>
+                      <Button onClick={processFile} disabled={processing} className="w-full">
+                        {processing ? "Processing..." : "Process"}
+                      </Button>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            setIsInitialCrop(false);
+                            setCropDialogOpen(true);
+                          }}
+                          className="flex-1"
+                          disabled={processing}
+                        >
+                          <Crop className="mr-1.5 size-4" />
+                          Crop Image
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => setCancelDialogOpen(true)}
+                          className="flex-1"
+                          disabled={processing}
+                        >
+                          <X className="mr-1.5 size-4" />
+                          Delete Progress
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex gap-3">
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            setIsInitialCrop(false);
+                            setCropDialogOpen(true);
+                          }}
+                          className="flex-1"
+                          disabled={processing}
+                        >
+                          <Crop className="mr-1.5 size-4" />
+                          Recrop Image
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            setFile((prev) => (prev ? { ...prev, resultUrl: null } : prev))
+                          }
+                          className="flex-1 text-destructive hover:bg-destructive/10 border-destructive/20"
+                          disabled={processing}
+                        >
+                          <X className="mr-1.5 size-4" />
+                          Cancel
+                        </Button>
+                      </div>
+                      <Button onClick={downloadFile} disabled={processing} className="w-full">
+                        <CloudArrowDown className="mr-1.5 size-4" />
+                        {processing ? "Processing..." : "Download"}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
@@ -432,13 +563,6 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                     </div>
                   </div>
                 </div>
-                <input
-                  ref={filePickerRef}
-                  type="file"
-                  className="hidden"
-                  accept="image/png,image/jpeg,image/gif"
-                  onChange={onFileInputChange}
-                />
                 <span className="mt-2 block text-base/6 text-muted-foreground group-disabled:opacity-50 sm:text-xs">
                   Supported: JPG, PNG, GIF (max 10 MB, resized to 1024px)
                 </span>
@@ -486,9 +610,9 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                         setOptions((prev) =>
                           prev.boundaries === "cut"
                             ? {
-                                ...prev,
-                                options: { ...prev.options, topStrip: Number(e.target.value) },
-                              }
+                              ...prev,
+                              options: { ...prev.options, topStrip: Number(e.target.value) },
+                            }
                             : prev,
                         )
                       }
@@ -503,9 +627,9 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                         setOptions((prev) =>
                           prev.boundaries === "cut"
                             ? {
-                                ...prev,
-                                options: { ...prev.options, topStrip: Number(e.target.value) },
-                              }
+                              ...prev,
+                              options: { ...prev.options, topStrip: Number(e.target.value) },
+                            }
                             : prev,
                         )
                       }
@@ -528,9 +652,9 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                         setOptions((prev) =>
                           prev.boundaries === "cut"
                             ? {
-                                ...prev,
-                                options: { ...prev.options, radius: Number(e.target.value) },
-                              }
+                              ...prev,
+                              options: { ...prev.options, radius: Number(e.target.value) },
+                            }
                             : prev,
                         )
                       }
@@ -545,9 +669,9 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                         setOptions((prev) =>
                           prev.boundaries === "cut"
                             ? {
-                                ...prev,
-                                options: { ...prev.options, radius: Number(e.target.value) },
-                              }
+                              ...prev,
+                              options: { ...prev.options, radius: Number(e.target.value) },
+                            }
                             : prev,
                         )
                       }
@@ -628,6 +752,31 @@ export default function Options({ options: args }: { options: OptionsProps[] }) 
                 </Button>
                 <Button onClick={applyCrop}>Apply Crop</Button>
               </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {cancelDialogOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+          <Card className="flex w-full max-w-md flex-col gap-4 p-6">
+            <h3 className="font-semibold text-lg">Are you sure?</h3>
+            <p className="text-muted-foreground text-sm">
+              This will remove the current image and discard any unsaved changes.
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
+                Go Back
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  removeFile();
+                  setCancelDialogOpen(false);
+                }}
+              >
+                Yes, Cancel
+              </Button>
             </div>
           </Card>
         </div>
